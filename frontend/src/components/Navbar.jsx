@@ -1,27 +1,23 @@
-import { AppBar, Toolbar, Typography, Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 function Navbar() {
   return (
-    <AppBar
-      position="static"
-      sx={{
-        background: "#0B1026",
-        boxShadow: "none",
-        borderBottom: "1px solid rgba(255,255,255,0.1)",
+    <Box 
+      sx={{ 
+        height: 64, 
+        width: "100%", 
+        bg: "#FFFFFF", 
+        borderBottom: "1px solid rgba(0, 0, 0, 0.06)", 
+        display: "flex", 
+        alignItems: "center", 
+        px: 3,
+        boxSizing: "border-box"
       }}
     >
-      <Toolbar>
-        <Typography variant="h6" fontWeight="bold">
-          CortexAI
-        </Typography>
-
-        <Box sx={{ flexGrow: 1 }} />
-
-        <Typography variant="body2">
-          Enterprise Knowledge Assistant
-        </Typography>
-      </Toolbar>
-    </AppBar>
+      <Typography variant="h6" fontWeight="800" color="#0F172A">
+        CortexAI Platform
+      </Typography>
+    </Box>
   );
 }
 
