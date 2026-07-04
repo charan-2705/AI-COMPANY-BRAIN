@@ -1,10 +1,14 @@
-from services.llm_service import ask_llm
+from rag_service import ask_question
 
 while True:
-    question = input("Ask something: ")
+
+    question = input("Ask: ")
 
     if question.lower() == "exit":
         break
 
-    response = ask_llm(question)
-    print(response)
+    answer = ask_question(question)
+
+    print("\nAnswer:\n")
+
+    print(answer)

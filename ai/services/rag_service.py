@@ -1,48 +1,23 @@
 from document_loader import load_documents
 from text_splitter import split_documents
-
 from services.embedding_service import create_embeddings
 from services.vector_store import VectorStore
 from services.prompt_service import build_prompt
 from services.llm_service import ask_llm
-
 from sentence_transformers import SentenceTransformer
 
-# Load embedding model
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-print("Loading documents...")
 documents = load_documents()
-
-print("Splitting documents...")
 chunks = split_documents(documents)
-
-print("Creating embeddings...")
 embeddings = create_embeddings(chunks)
 
-print("Building FAISS index...")
 vector_store = VectorStore()
 vector_store.build_index(embeddings, chunks)
 
-print("\n✅ AI Company Brain is Ready!")
 
-while True:
-    query = input("\nAsk something (type 'exit' to quit): ")
-
-    if query.lower() == "exit":
-        break
-
-    # Create query embedding
+def ask_rag(query):
     query_embedding = embedding_model.encode(query)
-
-    # Retrieve relevant chunks
-    retrieved_chunks = vector_store.search(query_embedding, k=3)
-
-    # Build prompt
-    prompt = build_prompt(query, retrieved_chunks)
-
-    # Get LLM answer
-    answer = ask_llm(prompt)
-
-    print("\nAnswer:")
-    print(answer)
+    retrieved = vector_store.search(query_embedding, k=3)
+    prompt = build_prompt(query, retrieved)
+    return ask_llm(prompt)
