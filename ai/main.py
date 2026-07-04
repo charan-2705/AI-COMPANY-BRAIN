@@ -1,4 +1,4 @@
-from services.gemini_service import ask_gemini
+from services.llm_service import ask_llm
 
 while True:
     question = input("Ask something: ")
@@ -6,5 +6,5 @@ while True:
     if question.lower() == "exit":
         break
 
-    response = ask_gemini(question)
+    response = ask_llm(question)
     print(response)
