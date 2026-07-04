@@ -1,30 +1,44 @@
-from embeddings.embedder import get_embedding
-from vector_db.faiss_store import search_faiss
-from services.gemini_service import ask_gemini
+from document_loader import load_documents
+from text_splitter import split_documents
+
+from services.embedding_service import create_embeddings
+from services.vector_store import VectorStore
+from services.prompt_service import build_prompt
+from services.llm_service import ask_llm
+
+from sentence_transformers import SentenceTransformer
 
 
-def ask_rag(question):
-    # Convert question to embedding
-    query_embedding = get_embedding(question)
+embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # Retrieve relevant chunks from FAISS
-    relevant_chunks = search_faiss(query_embedding)
+documents = load_documents()
 
-    # Build context
-    context = "\n".join(relevant_chunks)
+if documents:
+    chunks = split_documents(documents)
+    embeddings = create_embeddings(chunks)
 
-    # Create final prompt
-    prompt = f"""
-Context:
-{context}
+    vector_store = VectorStore()
+    vector_store.build_index(embeddings, chunks)
+else:
+    chunks = []
+    vector_store = None
 
-Question:
-{question}
 
-Answer only using the context above.
-"""
+def ask_rag(query):
+    # Friendly response for greetings
+    if query.lower().strip() in ["hi", "hello", "hey"]:
+        return "Hello! How can I help you today?"
 
-    # Send to Gemini
-    answer = ask_gemini(prompt)
+    # No uploaded documents
+    if vector_store is None or len(chunks) == 0:
+        return "No documents have been uploaded yet."
+
+    query_embedding = embedding_model.encode(query)
+
+    retrieved_chunks = vector_store.search(query_embedding, k=3)
+
+    prompt = build_prompt(query, retrieved_chunks)
+
+    answer = ask_llm(prompt)
 
     return answer

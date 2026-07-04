@@ -1,10 +1,19 @@
-def split_text(text, chunk_size=500, overlap=50):
+def split_documents(documents, chunk_size=500, overlap=100):
     chunks = []
 
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start += chunk_size - overlap
+    for doc in documents:
+        text = doc["text"]
+        start = 0
+
+        while start < len(text):
+            end = start + chunk_size
+            chunk = text[start:end]
+
+            chunks.append({
+                "filename": doc["filename"],
+                "text": chunk
+            })
+
+            start += chunk_size - overlap
 
     return chunks
