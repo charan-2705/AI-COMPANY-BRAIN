@@ -1,16 +1,10 @@
-import os
-from google import genai
-from dotenv import load_dotenv
+from services.llm_service import ask_llm
 
-load_dotenv()
+while True:
+    question = input("Ask something: ")
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+    if question.lower() == "exit":
+        break
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents="Hello"
-)
-
-print(response.text)
+    response = ask_llm(question)
+    print(response)
