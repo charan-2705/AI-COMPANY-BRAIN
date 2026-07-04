@@ -1,7 +1,8 @@
-from app.services.gemini_service import generate_response
+from app.services.rag_service import ask_rag
 
 def chat_with_ai(question: str):
-    answer = generate_response(question)
+    answer = ask_rag(question)
+
     return {
         "answer": answer
     }
