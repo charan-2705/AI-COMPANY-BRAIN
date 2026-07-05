@@ -49,7 +49,7 @@ function Chat() {
     const aiMsg = {
       id: Date.now() + 1,
       sender: "ai",
-      text: response.data.answer,
+      text: `${response.data.answer}\n\n📄 Source: ${response.data.source}`,
     };
 
     setMessages((prev) => [...prev, aiMsg]);
