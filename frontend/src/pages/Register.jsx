@@ -36,8 +36,18 @@ function Register() {
   const handleRegister = async (e) => {
   e.preventDefault();
 
-  console.log("Register clicked");
-  console.log(formData);
+  const allowedEmailRegex =
+    /^[^\s@]+@(gmail\.com|outlook\.com|hotmail\.com|live\.com)$/i;
+
+  if (!allowedEmailRegex.test(formData.email)) {
+    alert("Only Gmail or Microsoft email addresses are allowed.");
+    return;
+  }
+
+  if (formData.password !== formData.confirmPassword) {
+    alert("Passwords do not match.");
+    return;
+  }
 
   try {
     const response = await registerUser({

@@ -99,14 +99,7 @@ function Sidebar() {
             mb: 1.5,
           }}
         >
-          <Typography sx={{ color: "#64748B", fontSize: "12px", fontWeight: 600 }}>
-            Local Storage Usage
-          </Typography>
-
-          <Typography sx={{ color: "#1E293B", fontSize: "14px", fontWeight: 700, mt: 0.5, mb: 1 }}>
-            2.1 GB / 10 GB
-          </Typography>
-
+        
           <LinearProgress
             variant="determinate"
             value={21}

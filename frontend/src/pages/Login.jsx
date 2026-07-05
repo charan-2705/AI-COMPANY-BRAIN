@@ -18,6 +18,8 @@ import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { loginUser } from "../services/authService";
+import { GoogleLogin } from "@react-oauth/google";
+import api from "../services/api";
 
 function Login() {
   const navigate = useNavigate();
@@ -27,19 +29,34 @@ function Login() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    const allowedEmailRegex =
+    /^[^\s@]+@(gmail\.com|outlook\.com|hotmail\.com|live\.com)$/i;
+
+  if (!allowedEmailRegex.test(email)) {
+    alert("Only Gmail or Microsoft email addresses are allowed.");
+    return;
+  }
 
     try {
-      const response = await loginUser({ email, password });
-      localStorage.setItem("token", response.data.access_token);
-      navigate("/chat");
-    } catch (error) {
-      console.error(error);
-      alert("Login failed. Check email/password.");
-    }
+  const response = await loginUser({ email, password });
+
+  localStorage.setItem("token", response.data.access_token);
+
+  if (response.data.user?.name) {
+    localStorage.setItem("username", response.data.user.name);
+  }
+
+  navigate("/dashboard");
+} catch (error) {
+  console.error(error);
+  alert("Login failed. Check email/password.");
+}
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", width: "100vw", display: "flex", background: "#F8FAFC" }}>
+    <Box sx={{ minHeight: "100vh", width: "100vw", display: "flex", background: "#F8FAFC", overflow: "hidden" }}>
+      
+      {/* Left Core Branding Showcase */}
       <Box
         sx={{
           flex: 1,
@@ -47,35 +64,45 @@ function Login() {
           flexDirection: "column",
           justifyContent: "space-between",
           p: 6,
-          background: "linear-gradient(135deg, #0F172A 0%, #1E293B 100%)",
+          background: "#0F172A",
+          position: "relative",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            inset: 0,
+            opacity: 0.03,
+            backgroundSize: "24px 24px",
+            backgroundImage: "linear-gradient(to right, #64748B 1px, transparent 1px), linear-gradient(to bottom, #64748B 1px, transparent 1px)",
+          }
         }}
       >
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-          <Box sx={{ p: 0.8, borderRadius: "8px", background: "linear-gradient(135deg, #0284C7 0%, #4F46E5 100%)", display: "flex" }}>
-            <AutoAwesomeIcon sx={{ color: "#FFFFFF", fontSize: "20px" }} />
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "center", zIndex: 1 }}>
+          <Box sx={{ p: 0.75, borderRadius: "6px", background: "#1E293B", border: "1px solid rgba(255,255,255,0.1)", display: "flex" }}>
+            <AutoAwesomeIcon sx={{ color: "#38BDF8", fontSize: "18px" }} />
           </Box>
 
-          <Typography variant="h6" fontWeight="800" sx={{ color: "#FFFFFF" }}>
+          <Typography variant="subtitle1" sx={{ color: "#FFFFFF", fontWeight: "700", letterSpacing: "-0.01em" }}>
             CortexAI
           </Typography>
         </Stack>
 
-        <Box sx={{ maxWidth: "460px" }}>
-          <Typography variant="h3" fontWeight="800" sx={{ color: "#FFFFFF", lineHeight: 1.2 }}>
+        <Box sx={{ maxWidth: "480px", zIndex: 1 }}>
+          <Typography variant="h4" sx={{ color: "#FFFFFF", fontWeight: "700", lineHeight: 1.25, letterSpacing: "-0.02em" }}>
             Enterprise knowledge, instantly accessible.
           </Typography>
 
-          <Typography sx={{ color: "#94A3B8", mt: 2, fontSize: "16px", lineHeight: 1.6 }}>
+          <Typography sx={{ color: "#94A3B8", mt: 1.5, fontSize: "14.5px", lineHeight: 1.6, fontWeight: 500 }}>
             Securely chat with your company guidelines, policy books, and documents.
           </Typography>
         </Box>
 
-        <Typography variant="caption" sx={{ color: "#475569" }}>
+        <Typography variant="caption" sx={{ color: "#475569", fontWeight: 500, zIndex: 1 }}>
           © 2026 CortexAI Technologies Inc.
         </Typography>
       </Box>
 
-      <Box sx={{ flex: { xs: 1, md: 0.9 }, display: "flex", justifyContent: "center", alignItems: "center", p: 5 }}>
+      {/* Right User Authentication Terminal */}
+      <Box sx={{ flex: { xs: 1, md: 0.9 }, display: "flex", justifyContent: "center", alignItems: "center", p: { xs: 3, sm: 6 }, background: "#F8FAFC" }}>
         <Card
           component="form"
           onSubmit={handleLogin}
@@ -83,19 +110,22 @@ function Login() {
           sx={{
             width: "100%",
             maxWidth: 420,
-            p: 5,
-            borderRadius: "16px",
+            p: { xs: 4, sm: 5 },
+            borderRadius: "8px",
             background: "#FFFFFF",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+            border: "1px solid #E2E8F0",
+            boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
           }}
         >
-          <Typography variant="h5" fontWeight="800">
-            Sign In
-          </Typography>
+          <Box mb={3.5}>
+            <Typography variant="h5" sx={{ fontWeight: "700", color: "#0F172A", letterSpacing: "-0.02em" }}>
+              Sign In
+            </Typography>
 
-          <Typography sx={{ color: "#64748B", mb: 4 }}>
-            Enter your credentials to access your workspace.
-          </Typography>
+            <Typography sx={{ color: "#64748B", mt: 0.5, fontSize: "13.5px", fontWeight: 500 }}>
+              Enter your credentials to access your workspace.
+            </Typography>
+          </Box>
 
           <Stack spacing={2.5}>
             <TextField
@@ -105,6 +135,16 @@ function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              InputLabelProps={{ sx: { fontSize: "14px", color: "#64748B" } }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: "8px",
+                  fontSize: "14px",
+                  "& fieldset": { borderColor: "#E2E8F0" },
+                  "&:hover fieldset": { borderColor: "#CBD5E1" },
+                  "&.Mui-focused fieldset": { borderColor: "#0F172A", borderWidth: "1px" },
+                },
+              }}
             />
 
             <Box>
@@ -115,26 +155,36 @@ function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                InputLabelProps={{ sx: { fontSize: "14px", color: "#64748B" } }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                    "& fieldset": { borderColor: "#E2E8F0" },
+                    "&:hover fieldset": { borderColor: "#CBD5E1" },
+                    "&.Mui-focused fieldset": { borderColor: "#0F172A", borderWidth: "1px" },
+                  },
+                }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton type="button" onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      <IconButton type="button" onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: "#94A3B8" }}>
+                        {showPassword ? <VisibilityOff sx={{ fontSize: 18 }} /> : <Visibility sx={{ fontSize: 18 }} />}
                       </IconButton>
                     </InputAdornment>
                   ),
                 }}
               />
 
-              <Box sx={{ display: "flex", justifyContent: "space-between", mt: 1 }}>
-                <Typography sx={{ fontSize: 13, color: "#64748B" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 1.25 }}>
+                <Typography sx={{ fontSize: 12.5, color: "#64748B", fontWeight: 500 }}>
                   Don't have an account?{" "}
-                  <Link component={RouterLink} to="/register" sx={{ color: "#4F46E5", fontWeight: 700 }}>
+                  <Link component={RouterLink} to="/register" sx={{ color: "#0F172A", fontWeight: "600", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}>
                     Register
                   </Link>
                 </Typography>
 
-                <Link href="#" sx={{ fontSize: 13, color: "#4F46E5", fontWeight: 600 }}>
+                <Link href="#" sx={{ fontSize: 12.5, color: "#64748B", fontWeight: 500, textDecoration: "none", "&:hover": { color: "#0F172A" } }}>
                   Forgot Password?
                 </Link>
               </Box>
@@ -145,26 +195,72 @@ function Login() {
             type="submit"
             fullWidth
             variant="contained"
+            disableElevation
             sx={{
-              mt: 3,
-              py: 1.4,
-              borderRadius: "10px",
-              fontWeight: 700,
+              mt: 3.5,
+              py: 1.25,
+              borderRadius: "8px",
+              fontWeight: 600,
+              fontSize: "14px",
               textTransform: "none",
-              background: "linear-gradient(135deg, #0284C7 0%, #4F46E5 100%)",
+              background: "#0F172A",
+              color: "#FFFFFF",
+              "&:hover": {
+                background: "#1E293B",
+              },
             }}
           >
             Sign In
           </Button>
 
-          <Divider sx={{ my: 3 }}>OR CONTINUE WITH</Divider>
+          <Divider sx={{ my: 3, "&::before, &::after": { borderColor: "#E2E8F0" }, fontSize: "11px", fontWeight: 600, color: "#94A3B8", letterSpacing: "0.03em" }}>
+            OR CONTINUE WITH
+          </Divider>
 
           <Stack direction="row" spacing={2}>
-            <Button startIcon={<GoogleIcon />} variant="outlined" fullWidth>
-              Google
-            </Button>
+            <GoogleLogin
+  onSuccess={async (credentialResponse) => {
+    try {
+      const response = await api.post("/api/auth/google", {
+        credential: credentialResponse.credential,
+      });
 
-            <Button startIcon={<MicrosoftIcon />} variant="outlined" fullWidth>
+      console.log("Google backend response:", response.data);
+
+      localStorage.setItem("token", response.data.access_token);
+
+      if (response.data.user?.name) {
+        localStorage.setItem("username", response.data.user.name);
+      }
+
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error("Google login error:", error);
+      alert("Google login backend failed");
+    }
+  }}
+  onError={() => {
+    alert("Google Login Failed");
+  }}
+/>
+            <Button 
+              startIcon={<MicrosoftIcon sx={{ fontSize: "16px !important" }} />} 
+              variant="outlined" 
+              fullWidth
+              sx={{
+                borderRadius: "8px",
+                borderColor: "#E2E8F0",
+                color: "#334155",
+                fontSize: "13.5px",
+                fontWeight: 500,
+                textTransform: "none",
+                py: 1,
+                "&:hover": {
+                  borderColor: "#CBD5E1",
+                  background: "#F8FAFC"
+                }
+              }}
+            >
               Microsoft
             </Button>
           </Stack>

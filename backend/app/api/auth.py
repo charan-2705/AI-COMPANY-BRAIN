@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+from app.schemas.auth import GoogleLoginRequest
+from app.services.auth_service import google_login
 
 from app.core.database import get_db
 from app.schemas.user import UserCreate, UserResponse
@@ -40,3 +42,11 @@ def login(credentials: LoginRequest, db: Session = Depends(get_db)):
         "access_token": token["access_token"],
         "token_type": token["token_type"],
     }
+@router.post("/google")
+def google_auth(request: GoogleLoginRequest, db: Session = Depends(get_db)):
+    token = google_login(db, request.credential)
+
+    if not token:
+        raise HTTPException(status_code=401, detail="Google authentication failed")
+
+    return token

@@ -7,7 +7,10 @@ from app.core.security import (
     verify_password,
     create_access_token,
 )
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
+GOOGLE_CLIENT_ID = "750544393804-pj86bmv70eo8m5fccq5si1v1365b0seu.apps.googleusercontent.com"
 
 def get_user_by_email(db: Session, email: str):
     return db.query(User).filter(User.email == email).first()
@@ -65,3 +68,45 @@ def login_user(db: Session, email: str, password: str):
             "email": user.email,
         },
     }
+
+
+
+def google_login(db: Session, credential: str):
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            credential,
+            requests.Request(),
+            GOOGLE_CLIENT_ID,
+        )
+
+        email = idinfo["email"]
+        name = idinfo.get("name", "Google User")
+
+    except Exception:
+        return None
+
+    user = get_user_by_email(db, email)
+
+    if not user:
+        user = User(
+            name=name,
+            email=email,
+            password="GOOGLE_ACCOUNT",
+        )
+
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+
+    access_token = create_access_token(
+        data={"sub": user.email}
+    )
+
+    return {
+    "access_token": access_token,
+    "token_type": "bearer",
+    "user": {
+        "name": user.name,
+        "email": user.email,
+    },
+}

@@ -13,3 +13,6 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     email: str | None = None
+
+class GoogleLoginRequest(BaseModel):
+    credential: str
